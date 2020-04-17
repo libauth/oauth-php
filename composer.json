@@ -1,0 +1,7 @@
+{
+    "name": "libauth/oauth-php",
+    "type": "library",
+    "license": "MIT",
+    "minimum-stability": "stable",
+    "require": {}
+}
