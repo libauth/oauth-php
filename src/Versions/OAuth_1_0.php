@@ -3,6 +3,7 @@
 namespace LibAuth\Versions;
 
 use LibAuth\Core\OAuthCore;
+use LibAuth\Tokens\AccessToken;
 use LibAuth\Tokens\RequestToken;
 
 class OAuth_1_0 extends OAuthCore {
@@ -27,7 +28,7 @@ class OAuth_1_0 extends OAuthCore {
    * @param string $url
    * @return void
    */
-  final protected function signOAuthRequest(array &$params, $method, $url) {
+  final protected function signOAuthRequest(array &$params, $method, $url, $secret = NULL) {
     $timestamp = time();
     $nonce = hash('sha1', "{$timestamp}|".mt_rand(10000, 90000));
 
@@ -51,6 +52,7 @@ class OAuth_1_0 extends OAuthCore {
       $signingKey = call_user_func([$this, 'getSigningKey']);
     } else {
       $signingKey = rawurldecode($this->secret) . '&';
+      if ($secret) $signingKey .= rawurlencode($secret);
     }
 
     $signature = hash_hmac('sha1', $baseString, $signingKey, true);
@@ -82,6 +84,23 @@ class OAuth_1_0 extends OAuthCore {
     parse_str($resp, $data);
 
     return new RequestToken($data);
+  }
+
+  public function getAccessToken($url, RequestToken $token, $verifier) {
+    $params = [
+      'oauth_consumer_key' => $token->oauth_token,
+      'oauth_verifier' => $verifier
+    ];
+
+    $this->signOAuthRequest($params, 'POST', $url, $token->oauth_token_secret);
+
+    $resp = $this->handler->post($url, [
+      'form_params' => $params
+    ]);
+
+    parse_str($resp, $data);
+
+    return new AccessToken($data);
   }
 
 }
