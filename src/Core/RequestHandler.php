@@ -60,11 +60,7 @@ class RequestHandler {
       throw new Exception($contents, $code);
     }
 
-    try {
-      return json_decode($contents);
-    } catch (GlobalException $e) {
-      return $contents;
-    }
+    return $contents;
   }
 
   public function get($path, $options = []) {

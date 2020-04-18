@@ -1,0 +1,11 @@
+language: php
+
+install:
+  - composer remove --no-update --no-scripts --dev phpdocumentor/phpdocumentor
+  - composer install
+
+branches:
+  only:
+    - master
+
+script: composer test

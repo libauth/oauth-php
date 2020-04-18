@@ -2,6 +2,7 @@
 
 namespace LibAuth\Core;
 
+use LibAuth\Exceptions\NotImplementedException;
 use LibAuth\Tokens\Token;
 
 class OAuthCore {
@@ -15,7 +16,7 @@ class OAuthCore {
    *
    * @var RequestHandler
    */
-  private $handler;
+  protected $handler;
 
   function __construct($id, $secret) {
     $this->id = $id;
@@ -34,7 +35,16 @@ class OAuthCore {
    * @return void
    */
   public function setToken(Token $token) {
-    //
+    throw new NotImplementedException(__METHOD__.' not imlemented!');
+  }
+
+  /**
+   * Get Request Token
+   *
+   * @return Token
+   */
+  public function getRequestToken($url) {
+    throw new NotImplementedException(__METHOD__.' not imlemented!');
   }
 
   /**
@@ -43,16 +53,7 @@ class OAuthCore {
    * @return Token
    */
   public function getAccessToken() {
-    //
-  }
-
-  /**
-   * Get Request Token
-   *
-   * @return Token
-   */
-  public function getRequestToken() {
-    //
+    throw new NotImplementedException(__METHOD__.' not imlemented!');
   }
 
 }
