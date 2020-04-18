@@ -88,7 +88,8 @@ class OAuth_1_0 extends OAuthCore {
 
   public function getAccessToken($url, RequestToken $token, $verifier) {
     $params = [
-      'oauth_consumer_key' => $token->oauth_token,
+      'oauth_consumer_key' => $this->id,
+      'oauth_token' => $token->oauth_token,
       'oauth_verifier' => $verifier
     ];
 
