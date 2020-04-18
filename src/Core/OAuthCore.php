@@ -3,6 +3,7 @@
 namespace LibAuth\Core;
 
 use LibAuth\Exceptions\NotImplementedException;
+use LibAuth\Tokens\RequestToken;
 use LibAuth\Tokens\Token;
 
 class OAuthCore {
@@ -52,7 +53,7 @@ class OAuthCore {
    *
    * @return Token
    */
-  public function getAccessToken() {
+  public function getAccessToken(RequestToken $token) {
     throw new NotImplementedException(__METHOD__.' not imlemented!');
   }
 
