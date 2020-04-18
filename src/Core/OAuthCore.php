@@ -48,13 +48,4 @@ class OAuthCore {
     throw new NotImplementedException(__METHOD__.' not imlemented!');
   }
 
-  /**
-   * Get Access Token
-   *
-   * @return Token
-   */
-  public function getAccessToken(RequestToken $token) {
-    throw new NotImplementedException(__METHOD__.' not imlemented!');
-  }
-
 }
