@@ -24,7 +24,11 @@ class TumblrTest extends OAuthTestCase {
   public function testCanGetRequestToken() {
     $url = self::BASE_URL . '/oauth/request_token';
     $callback = 'https://oauth.test/flickr/callback';
-    $token = $this->oauth->getRequestToken($url, $callback);
+
+    $token = $this->oauth->getRequestToken([
+      'url' => $url,
+      'callback_url' => $callback
+    ]);
 
     $this->assertInstanceOf(Token::class, $token);
   }
