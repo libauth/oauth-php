@@ -18,15 +18,14 @@ class FlickrTest extends OAuthTestCase {
     $id = getenv('FLICKR_API_KEY');
     $secret = getenv('FLICKR_API_SECRET');
 
-    $this->oauth = new OAuth($id, $secret, '1.0');
+    $this->oauth = new OAuth($id, $secret, self::BASE_URL, '1.0');
   }
 
   public function testCanGetRequestToken() {
-    $url = self::BASE_URL . '/oauth/request_token';
     $callback = 'https://oauth.test/flickr/callback';
 
     $token = $this->oauth->getRequestToken([
-      'url' => $url,
+      'url' => '/oauth/request_token',
       'callback_url' => $callback
     ]);
 

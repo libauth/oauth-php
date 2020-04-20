@@ -45,10 +45,10 @@ class OAuthCore extends RequestHandler {
    */
   private $authType;
 
-  function __construct($id, $secret) {
+  function __construct($id, $secret, $endpoint) {
     $this->id = $id;
     $this->secret = $secret;
-    parent::__construct();
+    parent::__construct($endpoint);
   }
 
   /**
