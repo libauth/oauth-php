@@ -52,6 +52,17 @@ class OAuthCore extends RequestHandler {
   }
 
   /**
+   * Get App ID
+   *
+   * Also known as consumer_key or api_key
+   *
+   * @return string
+   */
+  public function getAppId() {
+    return $this->id;
+  }
+
+  /**
    * Set Current Token
    *
    * @param Token $token
