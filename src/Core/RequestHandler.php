@@ -46,7 +46,7 @@ class RequestHandler {
    *
    * @param string $endpoint
    */
-  function __construct($endpoint) {
+  function __construct($endpoint, $sslVerify = true) {
     $this->ref = new ReflectionObject($this);
 
     $stack = new HandlerStack();
@@ -63,6 +63,7 @@ class RequestHandler {
     }
 
     $config = array_merge(static::REQUEST_CONFIG, [
+      'verify' => $sslVerify,
       'base_uri' => $endpoint,
       'handler' => $stack
     ]);
