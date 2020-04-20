@@ -41,7 +41,12 @@ class RequestHandler {
     ]
   ];
 
-  function __construct() {
+  /**
+   * Request Handler Constructor
+   *
+   * @param string $endpoint
+   */
+  function __construct($endpoint) {
     $this->ref = new ReflectionObject($this);
 
     $stack = new HandlerStack();
@@ -53,7 +58,12 @@ class RequestHandler {
     $callable = Closure::fromCallable([$this, 'mapResponse']);
     $stack->push(Middleware::mapResponse($callable->bindTo($this)));
 
+    if (substr($endpoint, 0, -1) !== '/') {
+      $endpoint = "{$endpoint}/";
+    }
+
     $config = array_merge(static::REQUEST_CONFIG, [
+      'base_uri' => $endpoint,
       'handler' => $stack
     ]);
 
@@ -92,6 +102,10 @@ class RequestHandler {
 
   public function request($method, $path, $options = []) {
     $method = strtoupper($method);
+
+    if (substr($path, 0, 1) === '/') {
+      $path = substr($path, 1);
+    }
 
     $headers = $this->call('getDefaultHeaders', [$method, $path, &$options]);
     if (!$headers) $headers = [];
