@@ -51,6 +51,10 @@ class OAuth_1_0 extends OAuthCore {
     $timestamp = time();
     $nonce = hash('sha1', "{$timestamp}|".mt_rand(10000, 90000));
 
+    if ($token && !array_key_exists('oauth_token', $params)) {
+      $params['oauth_token'] = $token->oauth_token;
+    }
+
     $params['oauth_consumer_key'] = $this->id;
     $params['oauth_nonce'] = $nonce;
     $params['oauth_signature_method'] = 'HMAC-SHA1';
