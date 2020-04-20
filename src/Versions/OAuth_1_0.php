@@ -2,12 +2,29 @@
 
 namespace LibAuth\Versions;
 
+use GuzzleHttp\Psr7\Request;
 use LibAuth\Core\OAuthCore;
+use LibAuth\Exceptions\Exception;
+use LibAuth\Params\AccessTokenParams;
+use LibAuth\Params\RequestTokenParams;
 use LibAuth\Tokens\AccessToken;
 use LibAuth\Tokens\RequestToken;
 
+use function GuzzleHttp\Psr7\stream_for;
+
 class OAuth_1_0 extends OAuthCore {
 
+  /**
+   * Create Sorted Parameters
+   *
+   * This is used by the `generateSignature` method to sort the request parameters.
+   * The values of the sorted parameters are `rawurlencode`d.
+   *
+   * @param array $params
+   * @return string[]
+   *
+   * @ignore
+   */
   private function createSortedParams(array $params) {
     $result = [];
 
@@ -21,17 +38,20 @@ class OAuth_1_0 extends OAuthCore {
   }
 
   /**
-   * Sign OAuth Request
+   * Generate OAuth Signature
    *
-   * @param array $params
    * @param string $method
    * @param string $url
-   * @return void
+   * @param array $params
+   * @return string|boolean
    */
-  final protected function signOAuthRequest(array &$params, $method, $url, $secret = NULL) {
+  protected function generateSignature($method, $url, array &$params = []) {
+    $token = $this->getToken();
+
     $timestamp = time();
     $nonce = hash('sha1', "{$timestamp}|".mt_rand(10000, 90000));
 
+    $params['oauth_consumer_key'] = $this->id;
     $params['oauth_nonce'] = $nonce;
     $params['oauth_signature_method'] = 'HMAC-SHA1';
     $params['oauth_timestamp'] = $timestamp;
@@ -48,37 +68,69 @@ class OAuth_1_0 extends OAuthCore {
 
     $baseString = implode('&', $baseParams);
 
-    if (method_exists($this, 'getSigningKey')) {
-      $signingKey = call_user_func([$this, 'getSigningKey']);
-    } else {
-      $signingKey = rawurldecode($this->secret) . '&';
-      if ($secret) $signingKey .= rawurlencode($secret);
+    $signingKey = rawurldecode($this->secret) . '&';
+    if ($token && $token->oauth_token_secret) {
+      $signingKey .= rawurlencode($token->oauth_token_secret);
     }
 
     $signature = hash_hmac('sha1', $baseString, $signingKey, true);
     $signature = base64_encode($signature);
 
-    $params['oauth_signature'] = $signature;
+    return $signature;
+  }
+
+  protected function authenticate(Request &$request) {
+    $method = strtoupper($request->getMethod());
+
+    $uri = $request->getUri();
+    list($url) = explode('?', (string)$uri);
+
+    $authType = $this->getAuthType();
+
+    switch ($authType) {
+      case self::AUTH_TYPE_FORM: {
+        $body = $request->getBody();
+        $content = $body->getContents();
+        parse_str($content, $params);
+
+        $signature = $this->generateSignature($method, $url, $params);
+        $params['oauth_signature'] = $signature;
+
+        $body = stream_for(http_build_query($params));
+        $request = $request->withBody($body);
+      } break;
+
+      case self::AUTH_TYPE_URI: {
+        $content = $uri->getQuery();
+        parse_str($content, $params);
+
+        $signature = $this->generateSignature($method, $url, $params);
+        $params['oauth_signature'] = $signature;
+
+        $uri = $uri->withQuery(http_build_query($params));
+        $request = $request->withUri($uri);
+      } break;
+    }
   }
 
   /**
-   * Get Request Token
+   * Handle Get Request Token
+   *
+   * @param RequestTokenParams $params
    *
    * @return RequestToken
    */
-  public function getRequestToken($url, $callback = NULL) {
-    $params = [
-      'oauth_consumer_key' => $this->id
-    ];
+  protected function handleGetRequestToken(RequestTokenParams $params) {
+    $input = [];
 
-    if (!empty($callback)) {
-      $params['oauth_callback'] = $callback;
+    if (isset($params->callback_url)) {
+      $input['oauth_callback'] = $params->callback_url;
     }
 
-    $this->signOAuthRequest($params, 'POST', $url);
+    $this->setAuthType(self::AUTH_TYPE_FORM);
 
-    $resp = $this->handler->post($url, [
-      'form_params' => $params
+    $resp = $this->post($params->url, [
+      'form_params' => $input
     ]);
 
     parse_str($resp, $data);
@@ -86,17 +138,25 @@ class OAuth_1_0 extends OAuthCore {
     return new RequestToken($data);
   }
 
-  public function getAccessToken($url, RequestToken $token, $verifier) {
-    $params = [
-      'oauth_consumer_key' => $this->id,
+  /**
+   * Handle Get Access Token
+   *
+   * @param AccessTokenParams $params
+   *
+   * @return AccessToken
+   */
+  protected function handleGetAccessToken(AccessTokenParams $params) {
+    $token = $this->getToken();
+
+    $input = [
       'oauth_token' => $token->oauth_token,
-      'oauth_verifier' => $verifier
+      'oauth_verifier' => $params->verifier
     ];
 
-    $this->signOAuthRequest($params, 'POST', $url, $token->oauth_token_secret);
+    $this->setAuthType(self::AUTH_TYPE_FORM);
 
-    $resp = $this->handler->post($url, [
-      'form_params' => $params
+    $resp = $this->post($params->url, [
+      'form_params' => $input
     ]);
 
     parse_str($resp, $data);
