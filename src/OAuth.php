@@ -14,6 +14,9 @@ use LibAuth\Versions\OAuth_2_1;
 /**
  * OAuth Class
  *
+ * @method string getAppId()
+ *  Get App ID also known as `consumer_key` or `api_key`
+ *
  * @method void setToken(Token $token)
  *  Set Active Token
  *
@@ -31,6 +34,24 @@ use LibAuth\Versions\OAuth_2_1;
  *
  * @method RequestToken getRequestToken(array $params = [])
  *  Get Request Token
+ *
+ * @method mixed request(string $method, string $path, array $options = [])
+ *  Make an OAuth request
+ *
+ * @method mixed get(string $path, array $options = [])
+ *  Make an OAuth GET request
+ *
+ * @method mixed post(string $path, array $options = [])
+ *  Make an OAuth POST request
+ *
+ * @method mixed patch(string $path, array $options = [])
+ *  Make an OAuth PATCH request
+ *
+ * @method mixed put(string $path, array $options = [])
+ *  Make an OAuth PUT request
+ *
+ * @method mixed delete(string $path, array $options = [])
+ *  Make an OAuth DELETE request
  */
 class OAuth {
 
