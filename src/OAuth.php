@@ -14,8 +14,6 @@ use LibAuth\Versions\OAuth_2_1;
 /**
  * OAuth Class
  *
- * @method RequestToken getRequestToken(string $url, string $callback = NULL)
- *
  * @method void setToken(Token $token)
  *  Set Active Token
  *
