@@ -84,9 +84,11 @@ class OAuth {
    *
    * @param string $id
    * @param string $secret
+   * @param string $endpoint
    * @param string $version
+   * @param boolean $sslVerify
    */
-  function __construct($id, $secret, $endpoint, $version = '2.0') {
+  function __construct($id, $secret, $endpoint, $version = '2.0', $sslVerify = true) {
     if (!array_key_exists($version, self::VERSIONS)) {
       $supported = array_keys(self::VERSIONS);
       $lastSupported = array_pop($supported);
@@ -106,7 +108,7 @@ class OAuth {
     $this->version = $version;
 
     $versionClass = self::VERSIONS[$version];
-    $this->instance = new $versionClass($id, $secret, $endpoint);
+    $this->instance = new $versionClass($id, $secret, $endpoint, $sslVerify);
   }
 
   /**
